@@ -1,4 +1,14 @@
-import { Node as ProsemirrorNode, Schema, NodeRange, NodeType, Mark, MarkType, ContentMatch } from "prosemirror-model";
+import {
+  Node as ProsemirrorNode,
+  Schema,
+  NodeRange,
+  NodeType,
+  Mark,
+  MarkType,
+  ContentMatch,
+  Slice,
+  Fragment,
+} from "prosemirror-model";
 
 import { Mapping } from "./map";
 import { Step, StepResult } from "./step";
@@ -71,6 +81,67 @@ export class Transform<S extends Schema = any> {
    * argument.
    */
   clearIncompatible: (pos: number, parentType: NodeType<S>, match?: ContentMatch<S>) => this;
+
+  /**
+   * Replace the part of the document between `from` and `to` with the
+   * given `slice`.
+   */
+  replace: (from: number, to?: number, slice?: Slice<S>) => this;
+
+  /**
+   * Replace the given range with the given content, which may be a
+   * fragment, node, or array of nodes.
+   */
+  replaceWith: (
+    from: number,
+    to: number,
+    content: Fragment<S> | ProsemirrorNode<S> | Array<ProsemirrorNode<S>>
+  ) => this;
+
+  /**
+   * Delete the content between the given positions.
+   */
+  delete: (from: number, to: number) => this;
+
+  /**
+   * Insert the given content at the given position.
+   */
+  insert: (pos: number, content: Fragment<S> | ProsemirrorNode<S> | Array<ProsemirrorNode<S>>) => this;
+
+  /**
+   * Replace a range of the document with a given slice, using `from`,
+   * `to`, and the slice's [`openStart`](#model.Slice.openStart) property
+   * as hints, rather than fixed start and end points. This method may
+   * grow the replaced area or close open nodes in the slice in order to
+   * get a fit that is more in line with WYSIWYG expectations, by
+   * dropping fully covered parent nodes of the replaced region when
+   * they are marked [non-defining](#model.NodeSpec.defining), or
+   * including an open parent node from the slice that _is_ marked as
+   * [defining](#model.NodeSpec.defining).
+   *
+   * This is the method, for example, to handle paste. The similar
+   * [`replace`](#transform.Transform.replace) method is a more
+   * primitive tool which will _not_ move the start and end of its given
+   * range, and is useful in situations where you need more precise
+   * control over what happens.
+   */
+  replaceRange: (from: number, to: number, slice: Slice<S>) => this;
+
+  /**
+   * Replace the given range with a node, but use `from` and `to` as
+   * hints, rather than precise positions. When from and to are the same
+   * and are at the start or end of a parent node in which the given
+   * node doesn't fit, this method may _move_ them out towards a parent
+   * that does allow the given node to be placed. When the given range
+   * completely covers a parent node, this method may completely replace
+   * that parent node.
+   */
+  replaceRangeWith: (from: number, to: number, node: ProsemirrorNode<S>) => this;
+  /**
+   * Delete the given range, expanding it to cover fully covered
+   * parent nodes until a valid replace is found.
+   */
+  deleteRange: (from: number, to: number) => this;
 
   // :: (step: Step) → this
   // Apply a new step in this transform, saving the result. Throws an
