@@ -1,4 +1,4 @@
-import { Node as ProsemirrorNode, Schema, NodeRange, NodeType, Mark } from "prosemirror-model";
+import { Node as ProsemirrorNode, Schema, NodeRange, NodeType, Mark, MarkType, ContentMatch } from "prosemirror-model";
 
 import { Mapping } from "./map";
 import { Step, StepResult } from "./step";
@@ -50,6 +50,27 @@ export class Transform<S extends Schema = any> {
   get before() {
     return this.docs.length ? this.docs[0] : this.doc;
   }
+
+  /**
+   * Add the given mark to the inline content between `from` and `to`.
+   */
+  addMark: (from: number, to: number, mark: Mark<S>) => this;
+
+  /**
+   * Remove marks from inline nodes between `from` and `to`. When `mark`
+   * is a single mark, remove precisely that mark. When it is a mark type,
+   * remove all marks of that type. When it is null, remove all marks of
+   * any type.
+   */
+  removeMark: (from: number, to: number, mark?: Mark<S> | MarkType<S>) => this;
+
+  /**
+   * Removes all marks and nodes from the content of the node at `pos`
+   * that don't match the given new parent node type. Accepts an
+   * optional starting [content match](#model.ContentMatch) as third
+   * argument.
+   */
+  clearIncompatible: (pos: number, parentType: NodeType<S>, match?: ContentMatch<S>) => this;
 
   // :: (step: Step) → this
   // Apply a new step in this transform, saving the result. Throws an

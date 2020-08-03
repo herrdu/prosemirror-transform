@@ -1,13 +1,4 @@
-import {
-  Slice,
-  Fragment,
-  NodeRange,
-  Node as ProsemirrorNode,
-  NodeType,
-  Schema,
-  Mark,
-  ResolvedPos,
-} from "prosemirror-model";
+import { Slice, Fragment, NodeRange, Node as ProsemirrorNode, NodeType, Schema, Mark } from "prosemirror-model";
 
 import { Transform } from "./transform";
 import { ReplaceStep, ReplaceAroundStep } from "./replace_step";
